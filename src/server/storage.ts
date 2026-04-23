@@ -401,7 +401,7 @@ export async function upvoteGalleryItem(
 	timestamp: string
 ): Promise<number> {
 	if (!isSupabaseConfigured()) {
-		throw new Error("Gallery is not available");
+		throw new Error("Supabase is not configured. Set SUPABASE_URL and SUPABASE_KEY environment variables.");
 	}
 
 	// First get the gallery item ID
