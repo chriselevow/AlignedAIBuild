@@ -23,6 +23,14 @@ An interactive web application that generates and modifies web applications usin
 Required environment variables:
 - `GROQ_API_KEY`: Your Groq API key
 
+Optional environment variables (for gallery/upvote features):
+- `SUPABASE_URL`: Your Supabase project URL
+- `SUPABASE_KEY`: Your Supabase service role key
+- `UPSTASH_REDIS_URL`: Redis URL for legacy storage (no longer actively used)
+- `BLOCK_SECRET`: Secret token for the IP block admin endpoint
+
+When `SUPABASE_URL` and `SUPABASE_KEY` are not set, the gallery and upvote features are silently disabled and the app runs with core generation functionality only.
+
 ## Getting Started
 
 1. Clone the repository

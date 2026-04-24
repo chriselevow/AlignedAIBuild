@@ -1,6 +1,6 @@
 import { Redis } from "ioredis";
 import crypto from "crypto";
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 interface GalleryItem {
 	sessionId: string;
@@ -16,15 +16,29 @@ function hashIP(ip: string): string {
 	return crypto.createHash('sha256').update(ip).digest('hex').substring(0, 8);
 }
 
-const supabase = createClient(
-	process.env.SUPABASE_URL!,
-	process.env.SUPABASE_KEY!,
-	{
-		auth: {
-			persistSession: false,
-		}
+function isSupabaseConfigured(): boolean {
+	return !!(process.env.SUPABASE_URL && process.env.SUPABASE_KEY);
+}
+
+let _supabase: SupabaseClient | null = null;
+
+function getSupabase(): SupabaseClient {
+	if (!isSupabaseConfigured()) {
+		throw new Error("Supabase is not configured. Set SUPABASE_URL and SUPABASE_KEY environment variables.");
 	}
-);
+	if (!_supabase) {
+		_supabase = createClient(
+			process.env.SUPABASE_URL!,
+			process.env.SUPABASE_KEY!,
+			{
+				auth: {
+					persistSession: false,
+				}
+			}
+		);
+	}
+	return _supabase;
+}
 
 // Cache for gallery items
 interface GalleryCache {
@@ -34,7 +48,13 @@ interface GalleryCache {
 
 let galleryCache: GalleryCache | null = null;
 
+export { isSupabaseConfigured };
+
 export async function getGallery(): Promise<GalleryItem[]> {
+	if (!isSupabaseConfigured()) {
+		return [];
+	}
+
 	const now = Date.now();
 	const CACHE_TTL = 30 * 1000;
 
@@ -48,7 +68,7 @@ export async function getGallery(): Promise<GalleryItem[]> {
 	const PAGE_SIZE = 1000;
 	
 	while (true) {
-		const { data: items, error } = await supabase
+		const { data: items, error } = await getSupabase()
 			.from('gallery_items')
 			.select(`
 				id,
@@ -75,7 +95,7 @@ export async function getGallery(): Promise<GalleryItem[]> {
 	page = 0;
 	
 	while (true) {
-		const { data: upvotes, error: upvoteError } = await supabase
+		const { data: upvotes, error: upvoteError } = await getSupabase()
 			.from('upvotes')
 			.select('gallery_item_id')
 			.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
@@ -115,8 +135,12 @@ export async function getGallery(): Promise<GalleryItem[]> {
 }
 
 export async function getUpvotes(sessionId: string, version: string): Promise<number> {
+	if (!isSupabaseConfigured()) {
+		return 0;
+	}
+
 	// First get the gallery item ID
-	const { data: item, error: itemError } = await supabase
+	const { data: item, error: itemError } = await getSupabase()
 		.from('gallery_items')
 		.select('id')
 		.eq('session_id', sessionId)
@@ -127,7 +151,7 @@ export async function getUpvotes(sessionId: string, version: string): Promise<nu
 	if (!item) throw new Error("Gallery item not found");
 
 	// Then count upvotes for this item
-	const { count, error: countError } = await supabase
+	const { count, error: countError } = await getSupabase()
 		.from('upvotes')
 		.select('*', { count: 'exact', head: true })
 		.eq('gallery_item_id', item.id);
@@ -137,7 +161,11 @@ export async function getUpvotes(sessionId: string, version: string): Promise<nu
 }
 
 export async function isIPBlocked(ip: string): Promise<boolean> {
-	const { count, error } = await supabase
+	if (!isSupabaseConfigured()) {
+		return false;
+	}
+
+	const { count, error } = await getSupabase()
 		.from('blocked_ips')
 		.select('*', { count: 'exact', head: true })
 		.eq('ip_address', ip);
@@ -149,7 +177,7 @@ export async function isIPBlocked(ip: string): Promise<boolean> {
 
 // Helper function to get gallery item by session and version
 export async function getGalleryItem(sessionId: string, version: string) {
-	const { data, error } = await supabase
+	const { data, error } = await getSupabase()
 		.from('gallery_items')
 		.select('id, session_id, version, title, description, signature, created_at, creator_ip_hash')
 		.eq('session_id', sessionId)
@@ -227,8 +255,12 @@ export async function blockIP(ip: string, token: string) {
 		throw new Error("Invalid token");
 	}
 
+	if (!isSupabaseConfigured()) {
+		throw new Error("Supabase is not configured");
+	}
+
 	// Add IP to blocked_ips table
-	const { error: blockError } = await supabase
+	const { error: blockError } = await getSupabase()
 		.from('blocked_ips')
 		.upsert({
 			ip_address: ip
@@ -237,7 +269,7 @@ export async function blockIP(ip: string, token: string) {
 	if (blockError) throw blockError;
 
 	// Get all gallery items created by this IP
-	const { data: items, error: itemsError } = await supabase
+	const { data: items, error: itemsError } = await getSupabase()
 		.from('gallery_items')
 		.select('id')
 		.eq('creator_ip_hash', hashIP(ip));
@@ -246,7 +278,7 @@ export async function blockIP(ip: string, token: string) {
 
 	if (items && items.length > 0) {
 		// Delete all gallery items by this IP (cascade will handle upvotes)
-		const { error: deleteError } = await supabase
+		const { error: deleteError } = await getSupabase()
 			.from('gallery_items')
 			.delete()
 			.eq('creator_ip_hash', hashIP(ip));
@@ -259,12 +291,16 @@ export async function blockIP(ip: string, token: string) {
 }
 
 export async function addToGallery(item: GalleryItem, creatorIP: string): Promise<boolean> {
+	if (!isSupabaseConfigured()) {
+		return true; // Silently succeed when Supabase is not configured
+	}
+
 	// Ensure createdAt is set
 	item.createdAt = item.createdAt || new Date().toISOString();
 	const creatorIpHash = hashIP(creatorIP);
 
 	// Insert into gallery_items table
-	const { data: galleryItem, error: insertError } = await supabase
+	const { data: galleryItem, error: insertError } = await getSupabase()
 		.from('gallery_items')
 		.upsert({
 			session_id: item.sessionId,
@@ -320,7 +356,7 @@ export async function removeGalleryItem(sessionId: string, version: string, requ
 		try {
 			const requestIpHash = hashIP(requestIP);
 
-			const { data: item, error: selectError } = await supabase
+			const { data: item, error: selectError } = await getSupabase()
 				.from('gallery_items')
 				.select('id, creator_ip_hash')
 				.eq('session_id', sessionId)
@@ -332,7 +368,7 @@ export async function removeGalleryItem(sessionId: string, version: string, requ
 					throw new Error("Unauthorized: You can only remove your own submissions");
 				}
 
-				const { error: deleteError } = await supabase
+				const { error: deleteError } = await getSupabase()
 					.from('gallery_items')
 					.delete()
 					.eq('id', item.id);
@@ -364,9 +400,12 @@ export async function upvoteGalleryItem(
 	voterIp: string,
 	timestamp: string
 ): Promise<number> {
+	if (!isSupabaseConfigured()) {
+		throw new Error("Supabase is not configured. Set SUPABASE_URL and SUPABASE_KEY environment variables.");
+	}
 
 	// First get the gallery item ID
-	const { data: item, error: itemError } = await supabase
+	const { data: item, error: itemError } = await getSupabase()
 		.from('gallery_items')
 		.select('id')
 		.eq('session_id', sessionId)
@@ -377,7 +416,7 @@ export async function upvoteGalleryItem(
 	if (!item) throw new Error("Gallery item not found");
 
 	// Check if this IP has already voted
-	const { count: existingVote, error: voteCheckError } = await supabase
+	const { count: existingVote, error: voteCheckError } = await getSupabase()
 		.from('upvotes')
 		.select('*', { count: 'exact', head: true })
 		.eq('gallery_item_id', item.id)
@@ -388,7 +427,7 @@ export async function upvoteGalleryItem(
 
 
 	// Add the upvote with timestamp
-	const { error: upvoteError } = await supabase
+	const { error: upvoteError } = await getSupabase()
 		.from('upvotes')
 		.insert({
 			gallery_item_id: item.id,
