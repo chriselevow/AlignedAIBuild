@@ -1,10 +1,11 @@
 import crypto from "node:crypto";
 
-// It's assumed you've loaded your .env file before running this code
-const secretKey = process.env.HTML_SIGNING_SECRET;
-
-if (!secretKey) {
-	throw new Error("HTML_SIGNING_SECRET not found in environment variables");
+function getSecretKey(): string {
+	const secretKey = process.env.HTML_SIGNING_SECRET;
+	if (!secretKey) {
+		throw new Error("HTML_SIGNING_SECRET not found in environment variables");
+	}
+	return secretKey;
 }
 
 /**
@@ -13,7 +14,7 @@ if (!secretKey) {
  * @returns A hex-encoded signature string.
  */
 export function signHtml(html: string): string {
-	const hmac = crypto.createHmac("sha256", secretKey);
+	const hmac = crypto.createHmac("sha256", getSecretKey());
 	hmac.update(html, "utf8");
 	return hmac.digest("hex");
 }

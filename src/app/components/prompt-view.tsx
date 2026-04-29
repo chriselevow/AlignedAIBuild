@@ -10,7 +10,7 @@ import { Info, Pencil } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import ModelSelector from "@/components/model-selector";
-import Groq_bolt from "public/groq_bolt.svg"
+import Image from "next/image";
 import { GalleryListing } from "./gallery-listing";
 import { MAINTENANCE_GENERATION } from "@/lib/settings";
 import { MODEL_OPTIONS } from "@/utils/models";
@@ -79,7 +79,7 @@ export default function PromptView() {
 					</h1>
 					<h2 className="text-[1.2em] md:text-[1.4em] font-montserrat mb-4 md:mb-8 text-center text-muted-foreground flex items-center justify-center gap-2">
 					at Groq speed
-						<img src="/Groq_Bolt.svg" alt="Groq Logo" className="w-8 h-8" />
+					<Image src="/Groq_Bolt.svg" alt="Groq Logo" width={32} height={32} />
 					</h2>
 				</div>
 				{MAINTENANCE_GENERATION && (
