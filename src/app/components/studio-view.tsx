@@ -241,6 +241,23 @@ function HomeContent() {
 					</div>
 				</div>
 			</div>
+			{/* Stats section */}
+			<div className="flex flex-col md:flex-row w-full max-w-3xl mx-auto px-4 md:px-0">
+				<div className="w-full flex items-center justify-center py-1">
+					<div className="text-sm text-muted-foreground text-center">
+						{history[historyIndex]?.usage && (
+							<span>
+								{(history[historyIndex].usage.total_time * 1000).toFixed(0)}ms •{" "}
+								{Math.round(
+									history[historyIndex].usage.total_tokens /
+										history[historyIndex].usage.total_time,
+								)}{" "}
+								tokens/sec
+							</span>
+						)}
+					</div>
+				</div>
+			</div>
 			{/* Bottom Input Bar */}
 			<div className="p-4 bg-background lg:border-t flex-shrink-0">
 				<div className="flex flex-col gap-4">
@@ -291,23 +308,6 @@ function HomeContent() {
 							initialModel={model}
 						/>
 						<OptionsButton />
-					</div>
-				</div>
-			</div>
-			<div className="flex flex-col md:flex-row w-full max-w-3xl mx-auto px-4 md:px-0">
-				{/* Stats section */}
-				<div className="w-full flex items-center justify-center py-2">
-					<div className="text-sm text-muted-foreground text-center">
-						{history[historyIndex]?.usage && (
-							<span>
-								{(history[historyIndex].usage.total_time * 1000).toFixed(0)}ms •{" "}
-								{Math.round(
-									history[historyIndex].usage.total_tokens /
-										history[historyIndex].usage.total_time,
-								)}{" "}
-								tokens/sec
-							</span>
-						)}
 					</div>
 				</div>
 			</div>
