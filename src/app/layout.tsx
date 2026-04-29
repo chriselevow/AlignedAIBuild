@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ROOT_URL } from "@/utils/config";
 import { MAINTENANCE_MODE } from "@/lib/settings";
 import { LayoutClientContent } from '@/components/layout-client-content';
+import { PasswordGate } from '@/components/PasswordGate';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={inter.className}>
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+					<PasswordGate>
 					<LayoutClientContent>
 						{MAINTENANCE_MODE ? (
 							<div className="text-center text-gray-500 py-8">
@@ -47,6 +49,7 @@ export default function RootLayout({
 							</>
 						)}
 					</LayoutClientContent>
+					</PasswordGate>
 
 					<footer className="fixed bottom-0 left-0 w-fit text-left text-sm py-1 px-4 bg-[hsl(var(--background))] border-t border-l border-r border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] z-10 rounded-tr-sm">
 						<a href="https://groq.com/terms-of-use/" target="_blank" rel="noopener noreferrer" className="underline hover:text-[hsl(var(--foreground))] mx-2">
