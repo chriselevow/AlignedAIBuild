@@ -18,10 +18,8 @@ import { PromptInput } from "./prompt-input";
 import { OptionsButton } from "./options-button";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import AppLogo from "@/components/AppLogo";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import ModelSelector from "@/components/model-selector";
 export default function StudioView() {
 	return (
 		<Suspense>
@@ -30,8 +28,6 @@ export default function StudioView() {
 	);
 }
 import { useState } from "react";
-
-import { MODEL_OPTIONS } from "@/utils/models";
 
 function HomeContent() {
 	const searchParams = useSearchParams();
@@ -146,13 +142,7 @@ function HomeContent() {
 							<div className="w-full">
 								<PromptInput />
 							</div>
-							<div className="w-full">
-								<ModelSelector
-									options={MODEL_OPTIONS}
-									onChange={setModel}
-									initialModel={model}
-								/>
-							</div>
+							
 						</div>
 					</div>
 
@@ -168,11 +158,6 @@ function HomeContent() {
 						<div className="flex-1">
 							<PromptInput />
 						</div>
-						<ModelSelector
-							options={MODEL_OPTIONS}
-							onChange={setModel}
-							initialModel={model}
-						/>
 						<OptionsButton />
 					</div>
 				</div>
@@ -298,16 +283,9 @@ function HomeContent() {
 				</div>
 			</div>
 			<div className="flex flex-col md:flex-row w-full max-w-3xl mx-auto px-4 md:px-0">
-				{/* Logo section */}
-				<div className="md:w-1/2 md:pr-4 md:border-r flex items-center justify-center md:justify-end py-2">
-					<span className="hidden md:inline text-sm text-muted-foreground">
-						Powered by
-					</span>
-					<AppLogo className="scale-75" size={100} />
-				</div>
 				{/* Stats section */}
-				<div className="md:w-1/2 md:pl-4 flex items-center justify-center md:justify-start py-2">
-					<div className="text-sm text-muted-foreground text-center md:text-left">
+				<div className="w-full flex items-center justify-center py-2">
+					<div className="text-sm text-muted-foreground text-center">
 						{history[historyIndex]?.usage && (
 							<span>
 								{(history[historyIndex].usage.total_time * 1000).toFixed(0)}ms •{" "}
@@ -315,15 +293,7 @@ function HomeContent() {
 									history[historyIndex].usage.total_tokens /
 										history[historyIndex].usage.total_time,
 								)}{" "}
-								tokens/sec •{" "}
-								<a
-									rel="noreferrer"
-									target="_blank"
-									className="underline"
-									href="https://console.groq.com/docs/models"
-								>
-									Build with Groq!
-								</a>
+								tokens/sec
 							</span>
 						)}
 					</div>
