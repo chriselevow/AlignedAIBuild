@@ -187,7 +187,7 @@ const [StudioProvider, useStudio] = providerFactory(() => {
 			}
 		} catch (error) {
 			console.error("Error generating HTML:", error);
-			toast.error("Failed to generate HTML");
+			toast.error(error instanceof Error ? error.message : "Failed to generate HTML");
 		} finally {
 			setIsGenerating(false);
 			setIsStreaming(false);
@@ -342,7 +342,7 @@ const [StudioProvider, useStudio] = providerFactory(() => {
 			}
 		} catch (error) {
 			console.error("Error:", error);
-			toast.error("Failed to apply edit");
+			toast.error(error instanceof Error ? error.message : "Failed to apply edit");
 		} finally {
 			setIsApplying(false);
 			setIsStreaming(false);
