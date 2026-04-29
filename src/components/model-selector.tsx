@@ -1,5 +1,5 @@
 import { ChevronDown, Check } from "lucide-react";
-import { MODEL_OPTIONS } from "@/utils/models";
+import { MODEL_OPTIONS, getModelDisplayName } from "@/utils/models";
 import { useState, useEffect, useRef } from "react";
 
 interface ModelSelectorProps {
@@ -82,7 +82,7 @@ const ModelSelector = ({
         className="flex items-center justify-end gap-2 cursor-pointer bg-transparent hover:bg-accent hover:text-accent-foreground
 rounded-lg p-2 transition-colors"
       >
-        <span className="text-black dark:text-white text-right">{selectedModel}</span>
+        <span className="text-black dark:text-white text-right">{getModelDisplayName(selectedModel)}</span>
         <ChevronDown
           className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""} text-black dark:text-white`}
         />
@@ -101,7 +101,7 @@ rounded-lg p-2 transition-colors"
                 selectedModel === option ? "bg-transparent text-blue-600 dark:text-blue-400" : "text-black dark:text-white"
               }`}
             >
-              <span>{option}</span>
+              <span>{getModelDisplayName(option)}</span>
               {selectedModel === option && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
             </li>
           ))}
