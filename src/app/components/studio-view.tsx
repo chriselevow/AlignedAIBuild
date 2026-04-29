@@ -20,6 +20,7 @@ import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import ModelSelector from "@/components/model-selector";
 export default function StudioView() {
 	return (
 		<Suspense>
@@ -28,6 +29,8 @@ export default function StudioView() {
 	);
 }
 import { useState } from "react";
+
+import { MODEL_OPTIONS } from "@/utils/models";
 
 function HomeContent() {
 	const searchParams = useSearchParams();
@@ -142,7 +145,13 @@ function HomeContent() {
 							<div className="w-full">
 								<PromptInput />
 							</div>
-							
+							<div className="w-full">
+								<ModelSelector
+									options={MODEL_OPTIONS}
+									onChange={setModel}
+									initialModel={model}
+								/>
+							</div>
 						</div>
 					</div>
 
@@ -158,6 +167,11 @@ function HomeContent() {
 						<div className="flex-1">
 							<PromptInput />
 						</div>
+						<ModelSelector
+							options={MODEL_OPTIONS}
+							onChange={setModel}
+							initialModel={model}
+						/>
 						<OptionsButton />
 					</div>
 				</div>

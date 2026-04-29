@@ -7,8 +7,10 @@ import { APP_EXAMPLES } from "@/data/app-examples";
 import { Info, Pencil } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import ModelSelector from "@/components/model-selector";
 import { GalleryListing } from "./gallery-listing";
 import { MAINTENANCE_GENERATION } from "@/lib/settings";
+import { MODEL_OPTIONS } from "@/utils/models";
 const APP_SUGGESTIONS = APP_EXAMPLES.map((example) => example.label);
 
 
@@ -20,6 +22,8 @@ export default function PromptView() {
 		setTriggerGeneration,
 		drawingData,
 		setDrawingData,
+		model,
+		setModel,
 		resetStreamingState,
 	} = useStudio();
 	const [showDrawing, setShowDrawing] = useState(false);
@@ -114,6 +118,13 @@ export default function PromptView() {
 						/>
 						</div>
 						<div className="flex items-center gap-2 ml-auto">
+						<ModelSelector
+							options={MODEL_OPTIONS}
+							onChange={(newModel) => {
+								setModel(newModel);
+							}}
+							initialModel={model}
+						/>
 						<Button
 							className="rounded-full"
 							type="submit"
