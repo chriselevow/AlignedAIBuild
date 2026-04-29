@@ -220,7 +220,7 @@ export async function POST(request: Request) {
 							encoder.encode(
 								JSON.stringify({
 									type: "error",
-									error: "Error generating content",
+									error: error instanceof Error ? error.message : "Error generating content",
 								}) + "\n"
 							)
 						);
