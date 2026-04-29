@@ -1,7 +1,5 @@
-import AppLogo from "@/components/AppLogo";
 import { MicrophoneButton } from "@/components/MicrophoneButton";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useStudio } from "@/providers/studio-provider";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
 import { useState } from "react";
@@ -10,7 +8,6 @@ import { Info, Pencil } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import ModelSelector from "@/components/model-selector";
-import Image from "next/image";
 import { GalleryListing } from "./gallery-listing";
 import { MAINTENANCE_GENERATION } from "@/lib/settings";
 import { MODEL_OPTIONS } from "@/utils/models";
@@ -71,16 +68,11 @@ export default function PromptView() {
 
 	return (
 		<div className="flex flex-col gap-6 items-center justify-center">
-			<AppLogo className="self-start mt-10 ml-10" size={120} />
-			<div className="flex flex-col gap-3 items-center justify-center min-w-[50%] px-4 md:px-0 mt-10">
+			<div className="flex flex-col gap-3 items-center justify-center min-w-[50%] px-4 md:px-0 mt-20">
 			<div>
 					<h1 className="text-[2em] md:text-[3em] font-montserrat text-center">
 						Build a micro-app
 					</h1>
-					<h2 className="text-[1.2em] md:text-[1.4em] font-montserrat mb-4 md:mb-8 text-center text-muted-foreground flex items-center justify-center gap-2">
-					at Groq speed
-					<Image src="/Groq_Bolt.svg" alt="Groq Logo" width={32} height={32} />
-					</h2>
 				</div>
 				{MAINTENANCE_GENERATION && (
 					<div className="text-center text-gray-500 flex items-center gap-2 border border-groq rounded-full p-4 my-4">
@@ -127,10 +119,11 @@ export default function PromptView() {
 						</div>
 						<div className="flex items-center gap-2 ml-auto">
 						<ModelSelector
-						onChange={(newModel) => {
-							setModel(newModel);
-						}}
-						initialModel={model}
+							options={MODEL_OPTIONS}
+							onChange={(newModel) => {
+								setModel(newModel);
+							}}
+							initialModel={model}
 						/>
 						<Button
 							className="rounded-full"
