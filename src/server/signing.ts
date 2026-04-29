@@ -7,6 +7,9 @@ function getSecretKey(): string {
 	if (secretKey) {
 		return secretKey;
 	}
+	if (process.env.NODE_ENV === "production") {
+		throw new Error("HTML_SIGNING_SECRET not found in environment variables");
+	}
 	if (!fallbackSecretKey) {
 		console.warn(
 			"HTML_SIGNING_SECRET not found in environment variables. " +
