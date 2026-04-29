@@ -128,23 +128,25 @@ const [StudioProvider, useStudio] = providerFactory(() => {
 						const lines = text.split("\n").filter(line => line.trim());
 						
 						for (const line of lines) {
+							let data;
 							try {
-								const data = JSON.parse(line);
-								
-								if (data.type === "chunk") {
-									// Simply append the new content to our streamingContent state
-									setStreamingContent(prev => prev + data.content);
-									// Also update reasoning for history
-									reasoning += data.content;
-								} else if (data.type === "complete") {
-									html = data.html;
-									signature = data.signature;
-									setStreamingComplete(true);
-								} else if (data.type === "error") {
-									throw new Error(data.error);
-								}
+								data = JSON.parse(line);
 							} catch (e) {
 								console.error("Error parsing streaming response:", e);
+								continue;
+							}
+
+							if (data.type === "chunk") {
+								// Simply append the new content to our streamingContent state
+								setStreamingContent(prev => prev + data.content);
+								// Also update reasoning for history
+								reasoning += data.content;
+							} else if (data.type === "complete") {
+								html = data.html;
+								signature = data.signature;
+								setStreamingComplete(true);
+							} else if (data.type === "error") {
+								throw new Error(data.error);
 							}
 						}
 					}
@@ -276,23 +278,25 @@ const [StudioProvider, useStudio] = providerFactory(() => {
 							const lines = text.split("\n").filter(line => line.trim());
 							
 							for (const line of lines) {
+								let data;
 								try {
-									const data = JSON.parse(line);
-									
-									if (data.type === "chunk") {
-										// Simply append the new content to our streamingContent state
-										setStreamingContent(prev => prev + data.content);
-										// Also update reasoning for history
-										reasoning += data.content;
-									} else if (data.type === "complete") {
-										html = data.html;
-										signature = data.signature;
-										setStreamingComplete(true);
-									} else if (data.type === "error") {
-										throw new Error(data.error);
-									}
+									data = JSON.parse(line);
 								} catch (e) {
 									console.error("Error parsing streaming response:", e);
+									continue;
+								}
+
+								if (data.type === "chunk") {
+									// Simply append the new content to our streamingContent state
+									setStreamingContent(prev => prev + data.content);
+									// Also update reasoning for history
+									reasoning += data.content;
+								} else if (data.type === "complete") {
+									html = data.html;
+									signature = data.signature;
+									setStreamingComplete(true);
+								} else if (data.type === "error") {
+									throw new Error(data.error);
 								}
 							}
 						}
