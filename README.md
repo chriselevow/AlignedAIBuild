@@ -22,6 +22,7 @@ An interactive web application that generates and modifies web applications usin
 
 Required environment variables:
 - `GROQ_API_KEY`: Your Groq API key
+- `HTML_SIGNING_SECRET`: A secret key used to sign and verify generated HTML (any random string; e.g. run `openssl rand -hex 32`)
 
 Optional environment variables (for gallery/upvote features):
 - `SUPABASE_URL`: Your Supabase project URL

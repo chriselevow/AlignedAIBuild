@@ -1,11 +1,24 @@
 import crypto from "node:crypto";
 
+let fallbackSecretKey: string | undefined;
+
 function getSecretKey(): string {
 	const secretKey = process.env.HTML_SIGNING_SECRET;
-	if (!secretKey) {
+	if (secretKey) {
+		return secretKey;
+	}
+	if (process.env.NODE_ENV === "production") {
 		throw new Error("HTML_SIGNING_SECRET not found in environment variables");
 	}
-	return secretKey;
+	if (!fallbackSecretKey) {
+		console.warn(
+			"HTML_SIGNING_SECRET not found in environment variables. " +
+			"Using a randomly generated key — signatures will not persist across server restarts. " +
+			"Set HTML_SIGNING_SECRET for production use.",
+		);
+		fallbackSecretKey = crypto.randomBytes(32).toString("hex");
+	}
+	return fallbackSecretKey;
 }
 
 /**
