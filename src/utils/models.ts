@@ -107,6 +107,7 @@ export function getModelMaxTokens(modelName: string): number {
 export function getModelConfig(modelName: string): ModelConfig {
     return MODEL_CONFIGS[modelName] ?? {
         name: modelName,
+        displayName: modelName,
         temperature: DEFAULT_TEMPERATURE,
         type: "text"
     };
