@@ -122,61 +122,6 @@ function HomeContent() {
 
 	return (
 		<main className="h-screen flex flex-col overflow-hidden">
-			{/* Top Input Bar */}
-			<div className="p-4 bg-background lg:border-b flex-shrink-0">
-				<div className="flex flex-col gap-4">
-					{/* Mobile Layout */}
-
-					<div className="flex flex-col gap-4 lg:hidden">
-						{/* Top Row - Controls */}
-						<div className="flex items-center justify-between gap-2 mb-1">
-							<NewButton />
-							<VersionSwitcher
-								className="justify-center flex-1"
-								currentVersion={historyIndex + 1}
-								totalVersions={history.length}
-								onPrevious={() => navigateHistory("prev")}
-								onNext={() => navigateHistory("next")}
-							/>
-							<OptionsButton />
-						</div>
-						{/* Bottom Row - Input and Model */}
-						<div className="flex flex-col gap-2">
-							<div className="w-full">
-								<PromptInput />
-							</div>
-							<div className="w-full">
-								<ModelSelector
-									options={MODEL_OPTIONS}
-									onChange={setModel}
-									initialModel={model}
-								/>
-							</div>
-						</div>
-					</div>
-
-					{/* Desktop Layout */}
-					<div className="hidden lg:flex items-center gap-4">
-						<NewButton />
-						<VersionSwitcher
-							currentVersion={historyIndex + 1}
-							totalVersions={history.length}
-							onPrevious={() => navigateHistory("prev")}
-							onNext={() => navigateHistory("next")}
-						/>
-						<div className="flex-1">
-							<PromptInput />
-						</div>
-						<ModelSelector
-							options={MODEL_OPTIONS}
-							onChange={setModel}
-							initialModel={model}
-						/>
-						<OptionsButton />
-					</div>
-				</div>
-			</div>
-
 			{/* Main Content */}
 			<div className="flex flex-1 overflow-hidden">
 				{/* Left Column - Code View or Streaming Content */}
@@ -296,9 +241,9 @@ function HomeContent() {
 					</div>
 				</div>
 			</div>
+			{/* Stats section */}
 			<div className="flex flex-col md:flex-row w-full max-w-3xl mx-auto px-4 md:px-0">
-				{/* Stats section */}
-				<div className="w-full flex items-center justify-center py-2">
+				<div className="w-full flex items-center justify-center py-1">
 					<div className="text-sm text-muted-foreground text-center">
 						{history[historyIndex]?.usage && (
 							<span>
@@ -310,6 +255,59 @@ function HomeContent() {
 								tokens/sec
 							</span>
 						)}
+					</div>
+				</div>
+			</div>
+			{/* Bottom Input Bar */}
+			<div className="p-4 bg-background lg:border-t flex-shrink-0">
+				<div className="flex flex-col gap-4">
+					{/* Mobile Layout */}
+					<div className="flex flex-col gap-4 lg:hidden">
+						{/* Top Row - Controls */}
+						<div className="flex items-center justify-between gap-2 mb-1">
+							<NewButton />
+							<VersionSwitcher
+								className="justify-center flex-1"
+								currentVersion={historyIndex + 1}
+								totalVersions={history.length}
+								onPrevious={() => navigateHistory("prev")}
+								onNext={() => navigateHistory("next")}
+							/>
+							<OptionsButton />
+						</div>
+						{/* Bottom Row - Input and Model */}
+						<div className="flex flex-col gap-2">
+							<div className="w-full">
+								<PromptInput />
+							</div>
+							<div className="w-full">
+								<ModelSelector
+									options={MODEL_OPTIONS}
+									onChange={setModel}
+									initialModel={model}
+								/>
+							</div>
+						</div>
+					</div>
+
+					{/* Desktop Layout */}
+					<div className="hidden lg:flex items-center gap-4">
+						<NewButton />
+						<VersionSwitcher
+							currentVersion={historyIndex + 1}
+							totalVersions={history.length}
+							onPrevious={() => navigateHistory("prev")}
+							onNext={() => navigateHistory("next")}
+						/>
+						<div className="flex-1">
+							<PromptInput />
+						</div>
+						<ModelSelector
+							options={MODEL_OPTIONS}
+							onChange={setModel}
+							initialModel={model}
+						/>
+						<OptionsButton />
 					</div>
 				</div>
 			</div>
