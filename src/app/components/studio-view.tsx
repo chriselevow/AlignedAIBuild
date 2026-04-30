@@ -20,7 +20,6 @@ import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import ModelSelector from "@/components/model-selector";
 export default function StudioView() {
 	return (
 		<Suspense>
@@ -28,9 +27,6 @@ export default function StudioView() {
 		</Suspense>
 	);
 }
-import { useState } from "react";
-
-import { MODEL_OPTIONS } from "@/utils/models";
 
 function HomeContent() {
 	const searchParams = useSearchParams();
@@ -55,11 +51,8 @@ function HomeContent() {
 		streamingContent,
 		streamingComplete,
 		resetStreamingState,
-		model,
-		setModel,
 	} = useStudio();
 	const { resolvedTheme } = useTheme();
-	const [selectedModel, setSelectedModel] = useState(MODEL_OPTIONS[0]); // Default model
 	const sourceLoadedRef = useRef(false);
 	
 	useEffect(() => {
@@ -275,17 +268,10 @@ function HomeContent() {
 							/>
 							<OptionsButton />
 						</div>
-						{/* Bottom Row - Input and Model */}
+						{/* Bottom Row - Input */}
 						<div className="flex flex-col gap-2">
 							<div className="w-full">
 								<PromptInput />
-							</div>
-							<div className="w-full">
-								<ModelSelector
-									options={MODEL_OPTIONS}
-									onChange={setModel}
-									initialModel={model}
-								/>
 							</div>
 						</div>
 					</div>
@@ -302,11 +288,6 @@ function HomeContent() {
 						<div className="flex-1">
 							<PromptInput />
 						</div>
-						<ModelSelector
-							options={MODEL_OPTIONS}
-							onChange={setModel}
-							initialModel={model}
-						/>
 						<OptionsButton />
 					</div>
 				</div>

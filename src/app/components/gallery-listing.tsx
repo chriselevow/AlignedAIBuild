@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import useSWR from "swr";
 import { getOgImageUrl } from "@/lib/utils";
@@ -58,48 +57,39 @@ export function GalleryListing({
 	}
 
 	return (
-		<div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 md:gap-6 xl:gap-8 justify-items-center">
+		<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
 			{(limit ? gallery.slice(0, limit) : gallery).map((item) => (
-				<div
+				<Link
 					key={item.sessionId}
-					className="relative bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+					href={`/apps/${item.sessionId}/${item.version}`}
+					target="_blank"
+					className="group flex flex-col rounded-xl overflow-hidden border border-border bg-card hover:border-groq hover:shadow-lg transition-all duration-200"
 				>
-					<Link
-						href={`/apps/${item.sessionId}/${item.version}`}
-						target="_blank"
-						className="block w-[150px] md:w-[200px] xl:w-[250px]"
-					>
-						<div
-							className={cn(
-								"bg-blue-500 h-[150px] bg-[url('/images/placeholder.png')] bg-cover bg-center",
-								"h-[150px] md:h-[200px] xl:h-[250px]",
-							)}
-							style={{
-								backgroundImage: `url(${getOgImageUrl(item.sessionId, item.version)})`,
-							}}
-						/>
-						<div className="p-2 flex flex-col gap-2">
-							<div className="flex justify-between items-start gap-2">
-								<div className="flex-1 min-w-0">
-									<div className="text-sm truncate" title={item.title}>
-										{item.title}
-									</div>
-								</div>
-								<div className="flex items-center gap-1 text-sm opacity-70 shrink-0">
-									<ThumbsUp size={14} />
-									<span>{item.upvoteCount}</span>
-								</div>
+					<div
+						className="w-full aspect-square bg-muted bg-cover bg-center"
+						style={{
+							backgroundImage: `url(${getOgImageUrl(item.sessionId, item.version)})`,
+						}}
+					/>
+					<div className="p-3 flex flex-col gap-1.5">
+						<div className="flex justify-between items-start gap-2">
+							<div className="font-medium text-sm leading-tight truncate flex-1 min-w-0" title={item.title}>
+								{item.title}
 							</div>
-							<div className="text-xs opacity-50 h-[95px] overflow-hidden text-ellipsis line-clamp-6">
-								{item.description}
-							</div>
-							<div className="flex items-center gap-1 text-xs opacity-50 mt-auto">
-								<Clock size={12} />
-								<span>{formatDistanceToNow(new Date(item.createdAt))} ago</span>
+							<div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+								<ThumbsUp size={12} />
+								<span>{item.upvoteCount}</span>
 							</div>
 						</div>
-					</Link>
-				</div>
+						<div className="text-xs text-muted-foreground line-clamp-2">
+							{item.description}
+						</div>
+						<div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+							<Clock size={11} />
+							<span>{formatDistanceToNow(new Date(item.createdAt))} ago</span>
+						</div>
+					</div>
+				</Link>
 			))}
 		</div>
 	);
