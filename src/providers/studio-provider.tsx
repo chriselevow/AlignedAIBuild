@@ -44,7 +44,7 @@ const [StudioProvider, useStudio] = providerFactory(() => {
 				return storedModel;
 			}
 		}
-		return "qwen-2.5-coder-32b";
+		return "moonshotai/kimi-k2-instruct";
 	});
 
 	// New streaming state
