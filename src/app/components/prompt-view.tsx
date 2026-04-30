@@ -71,13 +71,13 @@ export default function PromptView() {
 					</h1>
 				</div>
 				{MAINTENANCE_GENERATION && (
-					<div className="text-center text-gray-500 flex items-center gap-2 border border-groq rounded-full p-4 my-4">
+					<div className="text-center text-gray-500 flex items-center gap-2 border border-foreground rounded-full p-4 my-4">
 						<Info className="h-5 w-5" />
 						{"We're currently undergoing maintenance. We'll be back soon!"}
 					</div>
 				)}
 				<form
-					className="flex flex-col relative border-2 border-border border-solid rounded-lg p-4 w-full max-w-2xl focus-within:border-groq dark:border-[#666666]"
+					className="flex flex-col relative border-2 border-border border-solid rounded-lg p-4 w-full max-w-2xl focus-within:border-foreground dark:border-[#666666]"
 					onSubmit={handleSubmit}
 				>
 					<textarea

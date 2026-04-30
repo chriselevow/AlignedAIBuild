@@ -63,7 +63,7 @@ export function GalleryListing({
 					key={item.sessionId}
 					href={`/apps/${item.sessionId}/${item.version}`}
 					target="_blank"
-					className="group flex flex-col rounded-xl overflow-hidden border border-border bg-card hover:border-groq hover:shadow-lg transition-all duration-200"
+					className="group flex flex-col rounded-xl overflow-hidden border border-border bg-card hover:border-foreground hover:shadow-lg transition-all duration-200"
 				>
 					<div
 						className="w-full aspect-square bg-muted bg-cover bg-center"
