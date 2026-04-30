@@ -138,7 +138,8 @@ export default function PromptView() {
 			if (!res.ok) throw new Error("Failed to describe drawing");
 			const { description } = await res.json();
 			if (description) setQuery(description);
-		} catch {
+		} catch (err) {
+			console.error("Failed to describe drawing:", err);
 			toast.error("Could not describe drawing. Try again.");
 		} finally {
 			setIsDescribing(false);
@@ -164,7 +165,8 @@ export default function PromptView() {
 			const { html } = await res.json();
 			setWireframeHtml(html || "");
 			setStep("wireframe");
-		} catch {
+		} catch (err) {
+			console.error("Failed to generate wireframe:", err);
 			toast.error("Could not generate wireframe. Try again.");
 		} finally {
 			setIsGeneratingWireframe(false);

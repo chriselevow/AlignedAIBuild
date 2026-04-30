@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import {
 	PRIMARY_VISION_MODEL,
+	FALLBACK_VISION_MODEL,
 	getFallbackModel,
 } from "@/utils/models";
 
@@ -60,8 +61,41 @@ export async function POST(request: Request) {
 				finalQuery = finalQuery
 					? `${finalQuery}\nSketch: ${drawingDesc}`
 					: drawingDesc;
-			} catch {
-				// vision failed — fall through to text-only
+			} catch (primaryErr) {
+				console.error("Primary vision model failed for wireframe sketch, trying fallback:", primaryErr);
+				try {
+					const fallbackCompletion = await client.chat.completions.create({
+						messages: [
+							{
+								role: "user",
+								content: [
+									{
+										type: "text",
+										text: "Describe this UI sketch in one sentence — what kind of app is it and what are the main elements?",
+									},
+									{
+										type: "image_url",
+										image_url: { url: drawingData },
+									},
+								],
+							},
+						],
+						model: FALLBACK_VISION_MODEL,
+						temperature: 0.2,
+						max_tokens: 128,
+						top_p: 1,
+						stream: false,
+						stop: null,
+					});
+					const drawingDesc =
+						fallbackCompletion.choices[0].message.content ?? "";
+					finalQuery = finalQuery
+						? `${finalQuery}\nSketch: ${drawingDesc}`
+						: drawingDesc;
+				} catch (fallbackErr) {
+					// Both vision models failed — proceed with text-only description
+					console.error("Fallback vision model also failed for wireframe sketch:", fallbackErr);
+				}
 			}
 		}
 
@@ -78,7 +112,8 @@ export async function POST(request: Request) {
 				stop: null,
 			});
 			rawHtml = completion.choices[0].message.content ?? "";
-		} catch {
+		} catch (primaryErr) {
+			console.error("Primary model failed for wireframe generation, trying fallback:", primaryErr);
 			const completion = await client.chat.completions.create({
 				messages: [{ role: "user", content: userPrompt }],
 				model: getFallbackModel(),
