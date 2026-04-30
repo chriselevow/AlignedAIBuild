@@ -159,7 +159,7 @@ export default function PromptView() {
 	return (
 		<div
 			className="fixed inset-0 flex flex-col items-center justify-center overflow-auto py-8"
-			style={{ background: gradient }}
+			style={{ background: "#000" }}
 		>
 			<div className="flex flex-col items-center gap-4 w-full max-w-md px-4">
 				{MAINTENANCE_GENERATION && (
@@ -231,7 +231,7 @@ export default function PromptView() {
 							type="button"
 							disabled={MAINTENANCE_GENERATION}
 							onClick={handleSuggestionClick(label)}
-							className="rounded-full text-xs px-4 py-1.5 bg-white/20 hover:bg-white/35 text-white backdrop-blur-sm border border-white/30 transition-colors whitespace-nowrap"
+							className="rounded-full text-xs px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm border border-white/20 transition-colors whitespace-nowrap"
 						>
 							{label}
 						</button>

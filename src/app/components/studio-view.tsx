@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
 	vscDarkPlus,
@@ -19,6 +19,22 @@ import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+
+const GRADIENTS = [
+	"linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+	"linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #fda085 100%)",
+	"linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%)",
+	"linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+	"linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+	"linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%)",
+	"linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 50%, #a1c4fd 100%)",
+	"linear-gradient(135deg, #fd7043 0%, #ff8a65 25%, #ffb74d 50%, #fff176 100%)",
+	"linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #e94560 100%)",
+	"linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+	"linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+	"linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)",
+];
+
 export default function StudioView() {
 	return (
 		<Suspense>
@@ -53,7 +69,11 @@ function HomeContent() {
 	} = useStudio();
 	const { resolvedTheme } = useTheme();
 	const sourceLoadedRef = useRef(false);
-	
+
+	const [gradient] = useState(
+		() => GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+	);
+
 	useEffect(() => {
 		const source = searchParams.get("source");
 		if (source && !sourceLoadedRef.current) {
@@ -93,7 +113,7 @@ function HomeContent() {
 				} catch (error) {
 					console.error("Error loading source version:", error);
 					toast.error("Failed to load source version");
-					sourceLoadedRef.current = false; // Reset if there was an error
+					sourceLoadedRef.current = false;
 				}
 			};
 			loadSourceVersion();
@@ -112,6 +132,26 @@ function HomeContent() {
 		streamingComplete,
 	]);
 
+	// ─── Streaming phase: full-screen black, code centered ───────────────────
+	if (isStreaming) {
+		return (
+			<main className="h-screen w-screen bg-black flex items-center justify-center overflow-hidden">
+				<div className="w-full max-w-3xl px-8 max-h-[90vh] overflow-auto">
+					<div className="flex items-center mb-6">
+						<div className="h-2 w-2 rounded-full bg-white mr-3 animate-pulse" />
+						<span className="text-xs text-gray-400 font-mono">
+							Generating your app...
+						</span>
+					</div>
+					<pre className="font-mono text-sm text-gray-300 whitespace-pre-wrap break-words leading-relaxed">
+						{streamingContent || "Thinking..."}
+					</pre>
+				</div>
+			</main>
+		);
+	}
+
+	// ─── Ready phase: split view ──────────────────────────────────────────────
 	return (
 		<main className="h-screen flex overflow-hidden">
 			{/* Left Column - Code View + Controls (desktop only) */}
@@ -125,28 +165,14 @@ function HomeContent() {
 						)}
 					/>
 
-					{isStreaming ? (
-						<div className="h-full font-mono text-sm overflow-auto p-4 text-white">
-							<div className="flex items-center mb-4">
-								<div className="h-2 w-2 rounded-full bg-white mr-2 animate-pulse" />
-								<span className="text-xs text-gray-400">
-									Generating your app...
-								</span>
-							</div>
-							<div className="whitespace-pre-wrap">
-								{streamingContent || "Thinking..."}
-							</div>
-						</div>
-					) : (
-						<SyntaxHighlighter
-							language="html"
-							style={vscDarkPlus}
-							className="h-full rounded"
-							customStyle={{ margin: 0, height: "100%", width: "100%", background: "#000" }}
-						>
-							{currentHtml || "<!-- HTML preview will appear here -->"}
-						</SyntaxHighlighter>
-					)}
+					<SyntaxHighlighter
+						language="html"
+						style={vscDarkPlus}
+						className="h-full rounded"
+						customStyle={{ margin: 0, height: "100%", width: "100%", background: "#000" }}
+					>
+						{currentHtml || "<!-- HTML preview will appear here -->"}
+					</SyntaxHighlighter>
 
 					<div className="absolute bottom-4 left-4">
 						<CopyButton code={currentHtml} />
@@ -169,7 +195,7 @@ function HomeContent() {
 					</div>
 				</div>
 
-				{/* Input bar — below code, left column only */}
+				{/* Input bar */}
 				<div className="p-3 border-t border-gray-800 bg-black flex-shrink-0">
 					<div className="flex items-center gap-2 mb-2">
 						<NewButton />
@@ -186,28 +212,11 @@ function HomeContent() {
 				</div>
 			</div>
 
-			{/* Right Column - Preview */}
-			<div className="lg:w-1/2 w-full flex flex-col overflow-hidden">
-				{/* Mobile: streaming indicator */}
-				{(isStreaming || isGenerating) && (
-					<div
-						className="lg:hidden block p-3 border-b"
-						style={{ backgroundColor: "#000", color: "#fff" }}
-					>
-						<div className="flex items-center">
-							<div className="h-2 w-2 rounded-full bg-white mr-2 animate-pulse" />
-							<span className="text-xs text-gray-400">
-								{isStreaming ? "Generating your app..." : "Processing..."}
-							</span>
-						</div>
-						{isStreaming && (
-							<div className="whitespace-pre-wrap font-mono text-xs max-h-[100px] overflow-auto mt-2 text-gray-300">
-								{streamingContent || "Thinking..."}
-							</div>
-						)}
-					</div>
-				)}
-
+			{/* Right Column - Preview with gradient */}
+			<div
+				className="lg:w-1/2 w-full flex flex-col overflow-hidden"
+				style={{ background: gradient }}
+			>
 				{/* Preview */}
 				<div className="flex-1 relative overflow-hidden p-4">
 					<div className="absolute top-2 right-6 flex gap-2 z-10">
