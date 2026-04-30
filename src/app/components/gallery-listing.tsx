@@ -1,6 +1,6 @@
 import Link from "next/link";
 import useSWR from "swr";
-import { getOgImageUrl } from "@/lib/utils";
+import { getOgImageUrl, getCardGradient } from "@/lib/utils";
 import { ThumbsUp, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Spinner } from "@/components/ui/spinner";
@@ -68,7 +68,10 @@ export function GalleryListing({
 					<div
 						className="w-full aspect-square bg-muted bg-cover bg-center"
 						style={{
+							background: getCardGradient(item.sessionId),
 							backgroundImage: `url(${getOgImageUrl(item.sessionId, item.version)})`,
+							backgroundSize: "cover",
+							backgroundPosition: "center",
 						}}
 					/>
 					<div className="p-3 flex flex-col gap-1.5">
