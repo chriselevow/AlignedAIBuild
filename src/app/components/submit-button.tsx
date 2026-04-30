@@ -18,10 +18,10 @@ export function SubmitButton() {
 				(mode === "feedback" && isApplying)
 			}
 			size="default"
-			className={`bg-groq text-groq-foreground transition-all duration-200 rounded-full lg:px-4 lg:h-10 lg:w-auto w-10 h-10 ${
+			className={`text-white transition-all duration-200 rounded-full lg:px-4 lg:h-10 lg:w-auto w-10 h-10 ${
 				isGenerating || isApplying
 					? "loading-animation"
-					: "bg-[#F55036] hover:bg-[#D93D26]"
+					: "bg-black hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
 			}`}
 			onClick={mode === "query" ? generateHtml : submitFeedback}
 		>

@@ -4,7 +4,6 @@ import { Suspense, useEffect, useRef } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
 	vscDarkPlus,
-	vs,
 } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { CopyButton } from "@/components/CopyButton";
 import { ReloadButton } from "@/components/ReloadButton";
@@ -20,7 +19,6 @@ import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import ModelSelector from "@/components/model-selector";
 export default function StudioView() {
 	return (
 		<Suspense>
@@ -28,9 +26,6 @@ export default function StudioView() {
 		</Suspense>
 	);
 }
-import { useState } from "react";
-
-import { MODEL_OPTIONS } from "@/utils/models";
 
 function HomeContent() {
 	const searchParams = useSearchParams();
@@ -55,11 +50,8 @@ function HomeContent() {
 		streamingContent,
 		streamingComplete,
 		resetStreamingState,
-		model,
-		setModel,
 	} = useStudio();
 	const { resolvedTheme } = useTheme();
-	const [selectedModel, setSelectedModel] = useState(MODEL_OPTIONS[0]); // Default model
 	const sourceLoadedRef = useRef(false);
 	
 	useEffect(() => {
@@ -121,130 +113,49 @@ function HomeContent() {
 	]);
 
 	return (
-		<main className="h-screen flex flex-col overflow-hidden">
-			{/* Main Content */}
-			<div className="flex flex-1 overflow-hidden">
-				{/* Left Column - Code View or Streaming Content */}
-				<div className="w-1/2 p-4 border-r overflow-auto lg:block hidden">
-					<div className="relative h-full">
-						<div
-							className={cn(
-								"absolute top-0 left-0 h-[2px] bg-groq animate-loader",
-								isGenerating || isApplying ? "opacity-100" : "opacity-0",
-							)}
-						/>
-						
-						{isStreaming ? (
-							// Streaming content view - match SyntaxHighlighter background
-							<div 
-								className="h-full rounded font-mono text-sm overflow-auto p-4"
-								style={{ 
-									backgroundColor: resolvedTheme === "dark" ? "#1E1E1E" : "#f5f5f5",
-									color: resolvedTheme === "dark" ? "#D4D4D4" : "#000000"
-								}}
-							>
-								<div className="flex items-center mb-4">
-									<div className="h-2 w-2 rounded-full bg-groq mr-2 animate-pulse"></div>
-									<span className="text-xs text-muted-foreground">
-										Generating your app...
-									</span>
-								</div>
-								<div className="whitespace-pre-wrap">
-									{streamingContent || "Thinking..."}
-								</div>
-							</div>
-						) : (
-							// Code view
-							<SyntaxHighlighter
-								language="html"
-								style={resolvedTheme === "dark" ? vscDarkPlus : vs}
-								className="h-full rounded"
-								customStyle={{ margin: 0, height: "100%", width: "100%" }}
-							>
-								{currentHtml || "<!-- HTML preview will appear here -->"}
-							</SyntaxHighlighter>
+		<main className="h-screen flex overflow-hidden">
+			{/* Left Column - Code View + Controls (desktop only) */}
+			<div className="w-1/2 border-r hidden lg:flex flex-col" style={{ backgroundColor: "#000", color: "#fff" }}>
+				{/* Code panel */}
+				<div className="relative flex-1 overflow-auto p-4">
+					<div
+						className={cn(
+							"absolute top-0 left-0 h-[2px] bg-white animate-loader",
+							isGenerating || isApplying ? "opacity-100" : "opacity-0",
 						)}
-						
-						<div className="absolute bottom-4 left-4">
-							<CopyButton code={currentHtml} />
+					/>
+
+					{isStreaming ? (
+						<div className="h-full font-mono text-sm overflow-auto p-4 text-white">
+							<div className="flex items-center mb-4">
+								<div className="h-2 w-2 rounded-full bg-white mr-2 animate-pulse" />
+								<span className="text-xs text-gray-400">
+									Generating your app...
+								</span>
+							</div>
+							<div className="whitespace-pre-wrap">
+								{streamingContent || "Thinking..."}
+							</div>
 						</div>
+					) : (
+						<SyntaxHighlighter
+							language="html"
+							style={vscDarkPlus}
+							className="h-full rounded"
+							customStyle={{ margin: 0, height: "100%", width: "100%", background: "#000" }}
+						>
+							{currentHtml || "<!-- HTML preview will appear here -->"}
+						</SyntaxHighlighter>
+					)}
+
+					<div className="absolute bottom-4 left-4">
+						<CopyButton code={currentHtml} />
 					</div>
 				</div>
 
-				{/* Right Column - Preview */}
-				<div className="lg:w-1/2 w-full overflow-hidden">
-					<div className="h-full p-4 relative">
-						{/* Mobile Code View - Only shown when streaming or generating */}
-						{(isStreaming || isGenerating) && (
-							<div 
-								className="lg:hidden block mb-4 border rounded shadow-sm p-4"
-								style={{ 
-									backgroundColor: resolvedTheme === "dark" ? "#1E1E1E" : "#f5f5f5",
-									color: resolvedTheme === "dark" ? "#D4D4D4" : "#000000"
-								}}
-							>
-								<div className="flex items-center mb-2">
-									<div className="h-2 w-2 rounded-full bg-groq mr-2 animate-pulse"></div>
-									<span className="text-xs text-muted-foreground">
-										{isStreaming ? "Generating your app..." : "Processing..."}
-									</span>
-								</div>
-								{isStreaming && (
-									<div className="whitespace-pre-wrap font-mono text-xs max-h-[200px] overflow-auto">
-										{streamingContent || "Thinking..."}
-									</div>
-								)}
-							</div>
-						)}
-						
-						<div className="absolute top-6 right-6 flex gap-2 z-10">
-							<ReloadButton iframeRef={iframeRef} />
-							<ShareButton
-								sessionId={history[historyIndex]?.sessionId}
-								version={history[historyIndex]?.version}
-								signature={history[historyIndex]?.signature}
-								disabled={
-									!history[historyIndex]?.sessionId ||
-									!history[historyIndex]?.version
-								}
-							/>
-						</div>
-						<iframe
-							title="Studio Preview"
-							ref={iframeRef}
-							srcDoc={`<style>body{background-color:${resolvedTheme === "dark" ? "rgb(30 30 30)" : "#ffffff"};margin:0;}</style>${currentHtml}`}
-							className="w-full h-full border rounded bg-background shadow-sm"
-							style={{ minHeight: "100%", minWidth: "100%", overflow: "auto" }}
-						/>
-					</div>
-				</div>
-
-				{/* Sliding Debug Overlay */}
-				<div
-					className={`fixed top-0 right-0 h-screen w-[60vw] bg-background shadow-lg transform transition-transform duration-300 overflow-hidden z-50 ${isOverlayOpen ? "translate-x-0" : "translate-x-full"}`}
-				>
-					<div className="h-full flex flex-col p-4">
-						<div className="flex justify-between items-center mb-4 flex-shrink-0">
-							<h2 className="font-medium">Prompt</h2>
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={() => setIsOverlayOpen(false)}
-								className="text-gray-500 hover:text-gray-700"
-							>
-								<X size={16} />
-							</Button>
-						</div>
-						<pre className="flex-1 text-sm bg-background p-4 rounded overflow-auto">
-							{getFormattedOutput()}
-						</pre>
-					</div>
-				</div>
-			</div>
-			{/* Stats section */}
-			<div className="flex flex-col md:flex-row w-full max-w-3xl mx-auto px-4 md:px-0">
-				<div className="w-full flex items-center justify-center py-1">
-					<div className="text-sm text-muted-foreground text-center">
+				{/* Usage stats */}
+				<div className="px-4 py-1 border-t border-gray-800">
+					<div className="text-xs text-gray-500 text-center">
 						{history[historyIndex]?.usage && (
 							<span>
 								{(history[historyIndex].usage.total_time * 1000).toFixed(0)}ms •{" "}
@@ -257,58 +168,105 @@ function HomeContent() {
 						)}
 					</div>
 				</div>
-			</div>
-			{/* Bottom Input Bar */}
-			<div className="p-4 bg-background lg:border-t flex-shrink-0">
-				<div className="flex flex-col gap-4">
-					{/* Mobile Layout */}
-					<div className="flex flex-col gap-4 lg:hidden">
-						{/* Top Row - Controls */}
-						<div className="flex items-center justify-between gap-2 mb-1">
-							<NewButton />
-							<VersionSwitcher
-								className="justify-center flex-1"
-								currentVersion={historyIndex + 1}
-								totalVersions={history.length}
-								onPrevious={() => navigateHistory("prev")}
-								onNext={() => navigateHistory("next")}
-							/>
-							<OptionsButton />
-						</div>
-						{/* Bottom Row - Input and Model */}
-						<div className="flex flex-col gap-2">
-							<div className="w-full">
-								<PromptInput />
-							</div>
-							<div className="w-full">
-								<ModelSelector
-									options={MODEL_OPTIONS}
-									onChange={setModel}
-									initialModel={model}
-								/>
-							</div>
-						</div>
-					</div>
 
-					{/* Desktop Layout */}
-					<div className="hidden lg:flex items-center gap-4">
+				{/* Input bar — below code, left column only */}
+				<div className="p-3 border-t border-gray-800 bg-black flex-shrink-0">
+					<div className="flex items-center gap-2 mb-2">
 						<NewButton />
 						<VersionSwitcher
+							className="flex-1 justify-center"
 							currentVersion={historyIndex + 1}
 							totalVersions={history.length}
 							onPrevious={() => navigateHistory("prev")}
 							onNext={() => navigateHistory("next")}
 						/>
-						<div className="flex-1">
-							<PromptInput />
+						<OptionsButton />
+					</div>
+					<PromptInput />
+				</div>
+			</div>
+
+			{/* Right Column - Preview */}
+			<div className="lg:w-1/2 w-full flex flex-col overflow-hidden">
+				{/* Mobile: streaming indicator */}
+				{(isStreaming || isGenerating) && (
+					<div
+						className="lg:hidden block p-3 border-b"
+						style={{ backgroundColor: "#000", color: "#fff" }}
+					>
+						<div className="flex items-center">
+							<div className="h-2 w-2 rounded-full bg-white mr-2 animate-pulse" />
+							<span className="text-xs text-gray-400">
+								{isStreaming ? "Generating your app..." : "Processing..."}
+							</span>
 						</div>
-						<ModelSelector
-							options={MODEL_OPTIONS}
-							onChange={setModel}
-							initialModel={model}
+						{isStreaming && (
+							<div className="whitespace-pre-wrap font-mono text-xs max-h-[100px] overflow-auto mt-2 text-gray-300">
+								{streamingContent || "Thinking..."}
+							</div>
+						)}
+					</div>
+				)}
+
+				{/* Preview */}
+				<div className="flex-1 relative overflow-hidden p-4">
+					<div className="absolute top-2 right-6 flex gap-2 z-10">
+						<ReloadButton iframeRef={iframeRef} />
+						<ShareButton
+							sessionId={history[historyIndex]?.sessionId}
+							version={history[historyIndex]?.version}
+							signature={history[historyIndex]?.signature}
+							disabled={
+								!history[historyIndex]?.sessionId ||
+								!history[historyIndex]?.version
+							}
+						/>
+					</div>
+					<iframe
+						title="Studio Preview"
+						ref={iframeRef}
+						srcDoc={`<style>body{background-color:${resolvedTheme === "dark" ? "rgb(30 30 30)" : "#ffffff"};margin:0;}</style>${currentHtml}`}
+						className="w-full h-full border rounded bg-background shadow-sm"
+						style={{ minHeight: "100%", minWidth: "100%", overflow: "auto" }}
+					/>
+				</div>
+
+				{/* Mobile input bar */}
+				<div className="lg:hidden p-3 border-t bg-background flex-shrink-0">
+					<div className="flex items-center gap-2 mb-2">
+						<NewButton />
+						<VersionSwitcher
+							className="flex-1 justify-center"
+							currentVersion={historyIndex + 1}
+							totalVersions={history.length}
+							onPrevious={() => navigateHistory("prev")}
+							onNext={() => navigateHistory("next")}
 						/>
 						<OptionsButton />
 					</div>
+					<PromptInput />
+				</div>
+			</div>
+
+			{/* Sliding Debug Overlay */}
+			<div
+				className={`fixed top-0 right-0 h-screen w-[60vw] bg-background shadow-lg transform transition-transform duration-300 overflow-hidden z-50 ${isOverlayOpen ? "translate-x-0" : "translate-x-full"}`}
+			>
+				<div className="h-full flex flex-col p-4">
+					<div className="flex justify-between items-center mb-4 flex-shrink-0">
+						<h2 className="font-medium">Prompt</h2>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setIsOverlayOpen(false)}
+							className="text-gray-500 hover:text-gray-700"
+						>
+							<X size={16} />
+						</Button>
+					</div>
+					<pre className="flex-1 text-sm bg-background p-4 rounded overflow-auto">
+						{getFormattedOutput()}
+					</pre>
 				</div>
 			</div>
 		</main>

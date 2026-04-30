@@ -7,10 +7,8 @@ import { APP_EXAMPLES } from "@/data/app-examples";
 import { Info, Pencil } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import ModelSelector from "@/components/model-selector";
 import { GalleryListing } from "./gallery-listing";
 import { MAINTENANCE_GENERATION } from "@/lib/settings";
-import { MODEL_OPTIONS } from "@/utils/models";
 const APP_SUGGESTIONS = APP_EXAMPLES.map((example) => example.label);
 
 
@@ -22,8 +20,6 @@ export default function PromptView() {
 		setTriggerGeneration,
 		drawingData,
 		setDrawingData,
-		model,
-		setModel,
 		resetStreamingState,
 	} = useStudio();
 	const [showDrawing, setShowDrawing] = useState(false);
@@ -75,13 +71,13 @@ export default function PromptView() {
 					</h1>
 				</div>
 				{MAINTENANCE_GENERATION && (
-					<div className="text-center text-gray-500 flex items-center gap-2 border border-groq rounded-full p-4 my-4">
+					<div className="text-center text-gray-500 flex items-center gap-2 border border-foreground rounded-full p-4 my-4">
 						<Info className="h-5 w-5" />
 						{"We're currently undergoing maintenance. We'll be back soon!"}
 					</div>
 				)}
 				<form
-					className="flex flex-col relative border-2 border-border border-solid rounded-lg p-4 w-full max-w-2xl focus-within:border-groq dark:border-[#666666]"
+					className="flex flex-col relative border-2 border-border border-solid rounded-lg p-4 w-full max-w-2xl focus-within:border-foreground dark:border-[#666666]"
 					onSubmit={handleSubmit}
 				>
 					<textarea
@@ -118,13 +114,6 @@ export default function PromptView() {
 						/>
 						</div>
 						<div className="flex items-center gap-2 ml-auto">
-						<ModelSelector
-							options={MODEL_OPTIONS}
-							onChange={(newModel) => {
-								setModel(newModel);
-							}}
-							initialModel={model}
-						/>
 						<Button
 							className="rounded-full"
 							type="submit"

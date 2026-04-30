@@ -44,7 +44,7 @@ const [StudioProvider, useStudio] = providerFactory(() => {
 				return storedModel;
 			}
 		}
-		return MODEL_OPTIONS[0];
+		return "qwen-2.5-coder-32b";
 	});
 
 	// New streaming state

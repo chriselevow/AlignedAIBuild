@@ -40,6 +40,18 @@ STYLING — load Tailwind in <head>: <script src="https://cdn.tailwindcss.com"><
 - Use a cohesive 2–3 color palette: one primary brand color, one neutral, one accent/highlight.
 ${themeInstructions}
 
+AVAILABLE COMPONENT LIBRARIES (use only when they genuinely improve the app)
+- Alpine.js — for declarative reactivity without a full framework (x-data, x-model, x-show, x-for, x-on, etc.):
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  Use when the app needs interactive UI state (toggles, tabs, dropdowns, dynamic lists) beyond simple JS.
+- Flowbite — ready-made Tailwind-compatible UI components (modals, carousels, drawers, tooltips, tables):
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.3.0/dist/flowbite.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.3.0/dist/flowbite.min.js"></script>
+  Use when the app calls for complex UI components that would take significant effort to hand-code.
+- Chart.js — for data visualisation (bar, line, pie, doughnut, radar, scatter charts):
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  Use whenever the app displays statistics, analytics, or numeric data in visual form.
+
 TYPOGRAPHY
 - Import and apply a Google Font via @import in a <style> tag (e.g. Inter, Poppins, or a suitable pairing).
 - Set a clear type scale: hero/display (3xl–5xl), headings (xl–2xl), body (base), captions (sm).
