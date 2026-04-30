@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ROOT_URL } from "@/utils/config";
 import { MAINTENANCE_MODE } from "@/lib/settings";
 import { LayoutClientContent } from '@/components/layout-client-content';
-import { PasswordGate } from '@/components/PasswordGate';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,7 +35,6 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={inter.className}>
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-					<PasswordGate>
 					<LayoutClientContent>
 						{MAINTENANCE_MODE ? (
 							<div className="text-center text-gray-500 py-8">
@@ -49,7 +47,6 @@ export default function RootLayout({
 							</>
 						)}
 					</LayoutClientContent>
-					</PasswordGate>
 
 				</ThemeProvider>
 			</body>
