@@ -57,7 +57,6 @@ function HomeContent() {
 		setCurrentFeedback,
 		setSessionId,
 	} = useStudio();
-	const { resolvedTheme } = useTheme();
 	const sourceLoadedRef = useRef(false);
 
 	const handleSave = () => {
