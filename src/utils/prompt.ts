@@ -19,13 +19,23 @@ export function constructPrompt(data: PromptData): string {
       } Ensure WCAG AA contrast ratios are met for all text.`
     : '';
 
+  const feedbackInstructions = hasFeedback
+    ? `FEEDBACK MODE — CRITICAL RULES
+- You are refining an existing app. Treat the <current html> as the source of truth.
+- Preserve ALL existing design decisions: background gradients, color palette, fonts, layout structure, and overall visual identity unless the feedback explicitly asks to change them.
+- Make ONLY the changes requested in <feedback>. Do not add new headers, change the background, or restructure sections that are not mentioned.
+- When making UI elements (cards, columns, panels) appear lighter or more transparent so an underlying gradient shows through, use semi-transparent backgrounds such as bg-white/10, bg-white/20, or rgba(255,255,255,0.15) with backdrop-blur-sm. Never replace the page background to achieve this effect.
+- Do NOT re-add a header, footer, or background wrapper that already exists in the current HTML.
+`
+    : '';
+
   const finalPrompt = `${currentHtml ? `<current html>${currentHtml}</current html>` : ''}
 ${currentFeedback ? `<feedback>${currentFeedback}</feedback>` : ''}
 ${!hasFeedback && query ? `<query>Generate a single HTML file based on this query: "${query}"</query>` : ''}
 ${`<output instructions>
 Produce a single, self-contained HTML file of the highest possible quality. Follow every rule below without exception.
 
-LAYOUT & STRUCTURE
+${feedbackInstructions}LAYOUT & STRUCTURE
 - Use semantic HTML5 elements (header, nav, main, section, article, footer, etc.).
 - Design a full-page layout that fills the viewport (min-height: 100vh) with no orphaned whitespace.
 - Use a clear visual hierarchy: prominent heading, supporting subtext, primary action, secondary content.
