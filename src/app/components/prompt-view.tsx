@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useStudio } from "@/providers/studio-provider";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { APP_EXAMPLES } from "@/data/app-examples";
-import { Info } from "lucide-react";
+import { Info, Sparkles, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { MAINTENANCE_GENERATION } from "@/lib/settings";
 
@@ -13,6 +13,8 @@ const COOL_APP_SUGGESTIONS = [
 	"Weather App",
 	"Expense Tracker",
 ];
+
+type Step = "input" | "wireframe";
 
 export default function PromptView() {
 	const {
@@ -27,6 +29,14 @@ export default function PromptView() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [isDrawing, setIsDrawing] = useState(false);
 	const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+
+	const [step, setStep] = useState<Step>("input");
+	const [wireframeHtml, setWireframeHtml] = useState("");
+	const [isDescribing, setIsDescribing] = useState(false);
+	const [isGeneratingWireframe, setIsGeneratingWireframe] = useState(false);
+
+	// Snapshot of drawing captured when user moves to wireframe step
+	const drawingSnapshotRef = useRef<string | null>(null);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -111,14 +121,61 @@ export default function PromptView() {
 		return null;
 	}, []);
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	// Use Groq vision to describe the drawing and fill the text input
+	const handleDescribeDrawing = async () => {
+		const drawing = getDrawingData();
+		if (!drawing) {
+			toast.error("Draw something on the canvas first!");
+			return;
+		}
+		setIsDescribing(true);
+		try {
+			const res = await fetch("/api/describe", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ imageData: drawing }),
+			});
+			if (!res.ok) throw new Error("Failed to describe drawing");
+			const { description } = await res.json();
+			if (description) setQuery(description);
+		} catch (err) {
+			console.error("Failed to describe drawing:", err);
+			toast.error("Could not describe drawing. Try again.");
+		} finally {
+			setIsDescribing(false);
+		}
+	};
+
+	// Generate wireframe and move to wireframe step
+	const handlePreviewWireframe = async () => {
 		const drawing = getDrawingData();
 		if (!query.trim() && !drawing) {
 			toast.error("Describe your app or draw it!");
 			return;
 		}
-		setDrawingData(drawing);
+		drawingSnapshotRef.current = drawing;
+		setIsGeneratingWireframe(true);
+		try {
+			const res = await fetch("/api/wireframe", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ query, drawingData: drawing }),
+			});
+			if (!res.ok) throw new Error("Failed to generate wireframe");
+			const { html } = await res.json();
+			setWireframeHtml(html || "");
+			setStep("wireframe");
+		} catch (err) {
+			console.error("Failed to generate wireframe:", err);
+			toast.error("Could not generate wireframe. Try again.");
+		} finally {
+			setIsGeneratingWireframe(false);
+		}
+	};
+
+	// Confirm wireframe and trigger the actual build
+	const handleConfirmBuild = () => {
+		setDrawingData(drawingSnapshotRef.current);
 		resetStreamingState();
 		setStudioMode(true);
 		setTriggerGeneration(true);
@@ -133,6 +190,45 @@ export default function PromptView() {
 		setTriggerGeneration(true);
 	};
 
+	// ── Wireframe step ──────────────────────────────────────────────────────────
+	if (step === "wireframe") {
+		return (
+			<div className="fixed inset-0 bg-black flex flex-col">
+				{/* Top bar */}
+				<div className="flex items-center justify-between px-6 py-3 border-b border-white/10 shrink-0">
+					<button
+						type="button"
+						onClick={() => setStep("input")}
+						className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						Back
+					</button>
+					<span className="text-sm text-white/40 font-mono">Wireframe Preview</span>
+					<Button
+						type="button"
+						onClick={handleConfirmBuild}
+						className="flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-semibold bg-white text-black hover:bg-gray-100"
+					>
+						<Check className="h-4 w-4" />
+						Confirm &amp; Build
+					</Button>
+				</div>
+
+				{/* Wireframe iframe */}
+				<div className="flex-1 overflow-hidden">
+					<iframe
+						title="Wireframe Preview"
+						srcDoc={wireframeHtml}
+						className="w-full h-full border-0"
+						style={{ background: "#000" }}
+					/>
+				</div>
+			</div>
+		);
+	}
+
+	// ── Input step ──────────────────────────────────────────────────────────────
 	return (
 		<div className="fixed inset-0 bg-black flex flex-col items-center justify-center p-6 overflow-auto">
 			{MAINTENANCE_GENERATION && (
@@ -142,57 +238,60 @@ export default function PromptView() {
 				</div>
 			)}
 
-			<form
-				className="w-full max-w-3xl flex flex-col gap-4"
-				onSubmit={handleSubmit}
-			>
-				{/* Two-column panel */}
-				<div className="flex flex-col md:flex-row gap-4 h-[360px]">
-					{/* Left — Drawing canvas */}
-					<div className="flex-1 flex flex-col rounded-2xl overflow-hidden shadow-2xl bg-white min-w-0">
-						<canvas
-							ref={canvasRef}
-							width={500}
-							height={400}
-							className="flex-1 block cursor-crosshair touch-none w-full"
-							onMouseDown={startDrawing}
-							onMouseMove={draw}
-							onMouseUp={stopDrawing}
-							onMouseLeave={stopDrawing}
-							onTouchStart={startDrawing}
-							onTouchMove={draw}
-							onTouchEnd={stopDrawing}
-						/>
-						<div className="flex justify-between items-center px-3 py-2 border-t border-gray-100 bg-white shrink-0">
-							<span className="text-xs text-gray-400">Draw your idea</span>
-							<button
-								type="button"
-								onClick={clearCanvas}
-								className="text-xs text-gray-400 hover:text-gray-600"
-							>
-								Clear
-							</button>
-						</div>
+			<div className="w-full max-w-lg flex flex-col gap-4">
+				{/* Square drawing canvas */}
+				<div className="w-full aspect-square rounded-2xl overflow-hidden shadow-2xl bg-white relative">
+					<canvas
+						ref={canvasRef}
+						width={500}
+						height={500}
+						className="block cursor-crosshair touch-none w-full h-full"
+						onMouseDown={startDrawing}
+						onMouseMove={draw}
+						onMouseUp={stopDrawing}
+						onMouseLeave={stopDrawing}
+						onTouchStart={startDrawing}
+						onTouchMove={draw}
+						onTouchEnd={stopDrawing}
+					/>
+					{/* Canvas toolbar */}
+					<div className="absolute bottom-0 left-0 right-0 flex justify-between items-center px-3 py-2 border-t border-gray-100 bg-white/90 backdrop-blur-sm">
+						<button
+							type="button"
+							onClick={clearCanvas}
+							className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+						>
+							Clear
+						</button>
+						<button
+							type="button"
+							onClick={handleDescribeDrawing}
+							disabled={isDescribing || MAINTENANCE_GENERATION}
+							className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 disabled:opacity-40 transition-colors"
+						>
+							<Sparkles className="h-3.5 w-3.5" />
+							{isDescribing ? "Describing…" : "Describe with AI"}
+						</button>
 					</div>
+				</div>
 
-					{/* Right — Notes / chat input */}
-					<div className="flex-1 flex flex-col rounded-2xl overflow-hidden shadow-2xl bg-[#111] border border-white/10 min-w-0">
-						<div className="px-4 pt-3 pb-1 shrink-0">
-							<span className="text-xs text-gray-500">Notes</span>
-						</div>
-						<textarea
-							disabled={MAINTENANCE_GENERATION}
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							className="flex-1 w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none resize-none px-4 pb-4 leading-relaxed"
-							placeholder={"Describe your app...\n\nWhat should it do?\nWhat should it look like?"}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" && e.metaKey) {
-									e.preventDefault();
-									e.currentTarget.form?.requestSubmit();
-								}
-							}}
-						/>
+				{/* AI-style text input */}
+				<div className="w-full rounded-2xl border border-white/15 bg-[#111] overflow-hidden shadow-2xl">
+					<textarea
+						disabled={MAINTENANCE_GENERATION}
+						value={query}
+						onChange={(e) => setQuery(e.target.value)}
+						className="w-full bg-transparent text-sm text-gray-100 placeholder-white/25 focus:outline-none resize-none px-5 pt-4 pb-2 leading-relaxed min-h-[96px]"
+						placeholder={"Describe your app idea…\n\nWhat should it do? What should it look like?"}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && e.metaKey) {
+								e.preventDefault();
+								handlePreviewWireframe();
+							}
+						}}
+					/>
+					<div className="flex items-center justify-between px-4 py-2 border-t border-white/8">
+						<span className="text-[11px] text-white/25">⌘↩ to preview</span>
 					</div>
 				</div>
 
@@ -211,15 +310,26 @@ export default function PromptView() {
 					))}
 				</div>
 
-				{/* Build button */}
+				{/* Preview wireframe button */}
 				<Button
-					type="submit"
-					disabled={MAINTENANCE_GENERATION}
-					className="w-full rounded-full py-3 text-sm font-semibold bg-white text-black hover:bg-gray-100"
+					type="button"
+					disabled={MAINTENANCE_GENERATION || isGeneratingWireframe}
+					onClick={handlePreviewWireframe}
+					className="w-full rounded-full py-3 text-sm font-semibold bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2 disabled:opacity-60"
 				>
-					Build
+					{isGeneratingWireframe ? (
+						<>
+							<span className="h-3.5 w-3.5 rounded-full border-2 border-black/30 border-t-black animate-spin" />
+							Generating Wireframe…
+						</>
+					) : (
+						<>
+							Preview Wireframe
+							<ArrowRight className="h-4 w-4" />
+						</>
+					)}
 				</Button>
-			</form>
+			</div>
 		</div>
 	);
 }
